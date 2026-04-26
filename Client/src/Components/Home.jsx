@@ -39,7 +39,7 @@ function Home(){
                     <input type='text' id='output' name='output'placeholder='Enter the path to the folder where you want to save the best photos'/>
                     <button disabled={Loading} type='submit'>{Loading?"Processing...":"Extract Best Photos"}</button>
                 </form>
-                <p style={{marginTop:'20px'}}>Note:If you don't enter the output folder or if the output folder doesn't exist, a folder with the name "curated_album" will be created in the same parent folder as of the input folder</p>
+                <p style={{marginTop:'20px'}}>Note:If you don't enter the output folder or if the output folder doesn't exist, a folder with the name of Input folder +"_curated" will be created in the same parent folder as of the input folder</p>
             </div>
         </div>
     )

@@ -18,8 +18,10 @@ def process():
     if not input_folder:
         return jsonify({'error':'Input folder is required'}),400
     if not output_folder:
-        parent_dir=os.path.dirname(os.path.abspath(input_folder))
-        output_folder=os.path.join(parent_dir,'curated_album')
+        clean_input_path = os.path.normpath(os.path.abspath(input_folder))
+        parent_dir = os.path.dirname(clean_input_path)
+        folder_name = os.path.basename(clean_input_path)
+        output_folder = os.path.join(parent_dir, f"{folder_name}_curated")
     try:
         ImgPipeline(input_folder,output_folder)
         return jsonify({'message':'Processing complete','outputFolder':output_folder}),200
