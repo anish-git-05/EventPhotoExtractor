@@ -11,18 +11,25 @@ preprocess=transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])  
+_model_cache=None
 current_dir = os.path.dirname(os.path.abspath(__file__))
-weights_path = os.path.join(current_dir, 'mobilenet_v2-7ebf99e0.pth')
-model=models.mobilenet_v2()
-model.load_state_dict(torch.load(weights_path, map_location=torch.device('cpu')))
-model.eval()
-feature_extractor=nn.Sequential(
-    model.features,
-    nn.AdaptiveAvgPool2d((1, 1)),
-    nn.Flatten()
-)
+def get_model():
+    global _model_cache
+    if _model_cache is None:
+        print("First run: Loading AI model into memory...", flush=True)
+        weights_path = os.path.join(os.path.dirname(__file__), 'mobilenet_v2-7ebf99e0.pth')
+        model = models.mobilenet_v2()
+        model.load_state_dict(torch.load(weights_path, map_location='cpu'))
+        model.eval()
+        _model_cache = nn.Sequential(
+            model.features,
+            nn.AdaptiveAvgPool2d((1, 1)),
+            nn.Flatten()
+        )
+    return _model_cache
 
 def extract_features(img_path):
+    feature_extractor = get_model()
     img=Image.open(img_path).convert('RGB')
     img.thumbnail((256,256))
     img_tensor=preprocess(img).unsqueeze(0)
