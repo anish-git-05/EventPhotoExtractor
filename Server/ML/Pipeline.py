@@ -31,7 +31,7 @@ def ImgPipeline(inputFolder,outputFolder):
         else:
             best_img=img_list[0]
             for img in img_list:
-                if scores[img]['blurriness']<scores[best_img]['blurriness']:
+                if scores[img]['blurriness']>scores[best_img]['blurriness']:
                     best_img=img
             best_photos.append(best_img)
     for img in best_photos:
