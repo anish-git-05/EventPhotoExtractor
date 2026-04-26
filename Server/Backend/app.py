@@ -1,7 +1,8 @@
-from flask import Flask,request,jsonify
+from flask import Flask,request,jsonify,send_file
 from flask_cors import CORS
 import os
 import sys
+import shutil
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir) 
@@ -12,22 +13,41 @@ CORS(app)
 
 @app.route('/process',methods=['POST'])
 def process():
-    data=request.get_json()
-    input_folder=data.get('inputFolder')
-    output_folder=data.get('outputFolder')
-    if not input_folder:
-        return jsonify({'error':'Input folder is required'}),400
-    if not output_folder:
-        clean_input_path = os.path.normpath(os.path.abspath(input_folder))
-        parent_dir = os.path.dirname(clean_input_path)
-        folder_name = os.path.basename(clean_input_path)
-        output_folder = os.path.join(parent_dir, f"{folder_name}_curated")
+    upload_dir="uploads"
+    curated_dir="curated"
+    zip_curated="curated_album"
+    if os.path.exists(upload_dir):
+        shutil.rmtree(upload_dir)
+    if os.path.exists(curated_dir):
+        shutil.rmtree(curated_dir)
+    os.makedirs(upload_dir)
+    os.makedirs(curated_dir)
+
+    data=request.files
+    if 'images' not in data:
+        return jsonify({'error':'No images uploaded'}),400
+    files=data.getlist('images')
+    for file in files:
+            if file.filename:
+                file.save(os.path.join(upload_dir, file.filename))
     try:
-        ImgPipeline(input_folder,output_folder)
-        return jsonify({'message':'Processing complete','outputFolder':output_folder}),200
+        ImgPipeline(upload_dir,curated_dir)
+        curated_photos = os.listdir(curated_dir)
+        if len(curated_photos) == 0:
+            return jsonify({"error": "No photos met the AI criteria."}), 400
+        zip_path = shutil.make_archive(zip_curated, 'zip', curated_dir)
+        return send_file(
+            zip_path, 
+            as_attachment=True, 
+            download_name='curated_album.zip',
+            mimetype='application/zip'
+        )
     except Exception as e:
         return jsonify({'error':str(e)}),500
-    
+    finally:
+        if os.path.exists(upload_dir): shutil.rmtree(upload_dir)
+        if os.path.exists(curated_dir): shutil.rmtree(curated_dir)
+        
 if __name__=="__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port,debug=False)

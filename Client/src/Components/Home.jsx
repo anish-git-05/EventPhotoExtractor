@@ -1,30 +1,75 @@
 import {useState} from 'react'
 import {API_URL} from '../api.js'
 import '../Home.css'
+
 function Home(){
-    const [Folders, setFolders] = useState({})
+    const [Folders, setFolders] = useState([])
     const [Loading, setLoading] = useState(false)
-    const handleSubmit=async (e)=>{
+
+    const handleFileChange = (e) => {
+        setFolders(e.target.files)
+    }
+
+    const handleSubmit = async (e) => {
         e.preventDefault()
+        
+        if(Folders.length === 0){
+            alert("Please select at least one file")
+            return
+        }
+        
         setLoading(true)
-        const response= await fetch(`${API_URL}/process`,{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
-            },
-            body:JSON.stringify({
-                inputFolder:e.target.path.value,
-                outputFolder:e.target.output.value
+        
+        const formData = new FormData();
+        for (let i = 0; i < Folders.length; i++) {
+            formData.append('images', Folders[i]);
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/process`, {
+                method: 'POST',
+                body: formData
             })
-        })
-        const data=await response.json()
-        setLoading(false)
-        if(response.ok){
-            setFolders(data)
-        }else{
-            alert(data.error)
+
+            if(response.ok){
+                const blob = await response.blob();
+                    
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', 'curated_album.zip');
+                
+                document.body.appendChild(link);
+                link.click();
+                
+                link.parentNode.removeChild(link);
+                window.URL.revokeObjectURL(downloadUrl);
+
+                // --- THE NEW CLEANUP CODE ---
+                
+                // 1. Reset your React state (removes the "X photos ready" text)
+                setFolders([]); 
+                
+                // 2. Reset the actual HTML form (clears the physical file input box)
+                e.target.reset(); 
+                
+                // Optional: Let them know it's completely done
+                alert("Success! Your curated album is downloading.");
+                
+                // ----------------------------
+
+            } else {
+                const data = await response.json()
+                alert(data.error || "An error occurred on the server.")
+            }
+        } catch (err) {
+            alert("Failed to connect to the server. Is Flask running?")
+            console.error(err)
+        } finally {
+            setLoading(false)
         }
     }
+
     return(
         <div className='home'>
             <div className='intro'>
@@ -32,16 +77,37 @@ function Home(){
                 <h2>Extract the best photos captured in your event!</h2>
             </div>
             <div className='filepath'>
-                <p>Enter the folder paths without quotes</p>
                 <form onSubmit={handleSubmit}>
-                    <label htmlFor='path'>Input Folder:</label>
-                    <input type='text' id='path' name='path' required placeholder='Enter the path to the folder containing event photos'/>
-                    <label htmlFor='output'>Output Folder:</label>
-                    <input type='text' id='output' name='output'placeholder='Enter the path to the folder where you want to save the best photos'/>
-                    <button disabled={Loading} type='submit'>{Loading?"Processing...":"Extract Best Photos"}</button>
+                    
+                    <label htmlFor='file-upload'>
+                        Select Event Photos:
+                    </label>
+
+                    <input 
+                        type='file' 
+                        id='file-upload' 
+                        multiple 
+                        accept='image/*' 
+                        onChange={handleFileChange}
+                    />
+
+                    {Folders.length > 0 && (
+                        <p>
+                            📎 {Folders.length} photos ready for upload.
+                        </p>
+                    )}
+                    
+                    <button disabled={Loading} type='submit'>
+                        {Loading ? "Processing..." : "Extract Best Photos"}
+                    </button>
                 </form>
-                <p style={{marginTop:'20px'}}>Note:If you don't enter the output folder or if the output folder doesn't exist, a folder with the name of Input folder +"_curated" will be created in the same parent folder as of the input folder</p>
             </div>
+            <div>
+                <h3>How to use:</h3>
+                <p>I: Click the "Select Event Photos" button and choose the event photos.</p>
+                <p>II: Click the "Extract Best Photos" button to start the extraction process.</p>
+            </div>
+            <p>Note: The curated zip folder will be saved in your downloads folder</p>
         </div>
     )
 }
