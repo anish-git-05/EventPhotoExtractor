@@ -20,7 +20,7 @@ def ImgPipeline(inputFolder,outputFolder):
         features.append(extract_features(imgPath))
         scores[imgPath]=imgScore(imgPath)
         gc.collect()
-    features=np.array(features)
+    features = np.array(features, dtype=np.float32)
     best_photos=[]
     clusters=cluster_images(features,img_path,eps=0.09)
     for label,img_list in clusters.items():
