@@ -32,6 +32,7 @@ function Home(){
                 <h2>Extract the best photos captured in your event!</h2>
             </div>
             <div className='filepath'>
+                <p>Enter the folder paths without quotes</p>
                 <form onSubmit={handleSubmit}>
                     <label htmlFor='path'>Input Folder:</label>
                     <input type='text' id='path' name='path' required placeholder='Enter the path to the folder containing event photos'/>
