@@ -22,7 +22,7 @@ def ImgPipeline(inputFolder,outputFolder):
         gc.collect()
     features = np.array(features, dtype=np.float32)
     best_photos=[]
-    clusters=cluster_images(features,img_path,eps=0.09)
+    clusters=cluster_images(features,img_path,eps=0.15)
     for label,img_list in clusters.items():
         if label=='noise':
             for noisy_img in img_list:
