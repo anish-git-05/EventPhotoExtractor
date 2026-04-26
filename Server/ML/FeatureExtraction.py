@@ -3,6 +3,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torchvision.models as models
 from PIL import Image
+import os
 
 preprocess=transforms.Compose([
     transforms.Resize(256),
@@ -10,9 +11,10 @@ preprocess=transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])  
-
-weight=models.MobileNet_V2_Weights.DEFAULT
-model=models.mobilenet_v2(weights=weight)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+weights_path = os.path.join(current_dir, 'mobilenet_v2-7ebf99e0.pth')
+model=models.mobilenet_v2()
+model.load_state_dict(torch.load(weights_path, map_location=torch.device('cpu')))
 model.eval()
 feature_extractor=nn.Sequential(
     model.features,
