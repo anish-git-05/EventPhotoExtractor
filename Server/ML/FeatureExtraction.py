@@ -11,17 +11,23 @@ preprocess=transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])  
 
-weight=models.ResNet50_Weights.DEFAULT
-model=models.resnet50(weights=weight)
-
-feature_extractor=nn.Sequential(*list(model.children())[:-1])
-feature_extractor.eval()
+weight=models.MobileNet_V2_Weights.DEFAULT
+model=models.mobilenet_v2(weights=weight)
+model.eval()
+feature_extractor=nn.Sequential(
+    model.features,
+    nn.AdaptiveAvgPool2d((1, 1)),
+    nn.Flatten()
+)
 
 def extract_features(img_path):
     img=Image.open(img_path).convert('RGB')
+    img.thumbnail((256,256))
     img_tensor=preprocess(img).unsqueeze(0)
     with torch.no_grad():
         features=feature_extractor(img_tensor)
+    del img
+    del img_tensor
     return features.squeeze().numpy()
 
 

@@ -4,6 +4,7 @@ from ML.FeatureExtraction import extract_features
 from ML.ImgQuality import imgScore
 import numpy as np
 import shutil
+import gc
 
 def ImgPipeline(inputFolder,outputFolder):
     scores={}
@@ -18,6 +19,7 @@ def ImgPipeline(inputFolder,outputFolder):
         img_path.append(imgPath)
         features.append(extract_features(imgPath))
         scores[imgPath]=imgScore(imgPath)
+        gc.collect()
     features=np.array(features)
     best_photos=[]
     clusters=cluster_images(features,img_path,eps=0.09)
