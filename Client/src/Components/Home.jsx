@@ -21,43 +21,49 @@ function Home(){
         try{
             let response;
             const formData=new FormData();
-            let chunk=1;
+            let flag=1;
             for (let i = 0; i<Folders.length; i++) {
                 formData.append('images',Folders[i]);
                 if(((i+1)%7==0 && i>0)||i==Folders.length-1){
-                    response = await fetch(`${API_URL}/process`, {
+                    response = await fetch(`${API_URL}/upload`, {
                         method: 'POST',
                         body: formData
                     })
-                    if(response.ok){
-                        const blob = await response.blob();     
-                        const downloadUrl = window.URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = downloadUrl;
-                        let fileName=`curated_album_part_${chunk}.zip`;
-                        link.setAttribute('download', fileName);
-                        
-                        document.body.appendChild(link);
-                        link.click();
-                        
-                        link.parentNode.removeChild(link);
-                        window.URL.revokeObjectURL(downloadUrl);
-                        formData.delete('images');
-                    } else {
+                    if(!response.ok){
                         const data = await response.json()
                         alert(data.error || "An error occurred on the server.")
+                        flag=0;
+                        break;
                     }
-                    chunk++;
+                    formData.delete('images');
                 }
             }
-                // 1. Reset your React state (removes the "X photos ready" text)
+            if(!flag){
+                alert("Upload failed. Please try again.");
+                return;
+            }
+            response=await fetch(`${API_URL}/process`);
+            if(response.ok){
+                const blob=await response.blob();
+                const downloadURL=window.URL.createObjectURL(blob);
+                const link=document.createElement('a');
+                link.href=downloadURL;
+                link.setAttribute('download','curated_album.zip');
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
+                window.URL.revokeObjectURL(downloadURL);
                 setFolders([]); 
                 document.getElementById('file-upload').value=''; 
-                alert("Success! Your curated album is downloading.");
+                alert("Success! Your curated album is downloaded.");
+            }else{
+                const data=await response.json();
+                alert(data.error|| "Processing failed. Please try again.");
+            }
                 
                 // ----------------------------
         } catch (err) {
-            alert("Failed to connect to the server. Is Flask running?")
+            alert("Failed to connect to the server. Please try again later.")
             console.error(err)
         } finally {
             setLoading(false)
