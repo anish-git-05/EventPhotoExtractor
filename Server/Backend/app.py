@@ -41,6 +41,7 @@ def process():
         curated_photos = os.listdir(curated_dir)
         if len(curated_photos) == 0:
             return jsonify({"error": "No photos met the AI criteria."}), 400
+        gc.collect()
         zip_path = shutil.make_archive(zip_curated, 'zip', curated_dir)
         return send_file(
             zip_path, 
