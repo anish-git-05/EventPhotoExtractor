@@ -1,2 +1,5 @@
 venv/
 __pycache__/
+Server/Backend/uploads/
+Server/Backend/curated/
+*.zip

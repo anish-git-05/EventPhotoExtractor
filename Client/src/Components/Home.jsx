@@ -12,7 +12,6 @@ function Home(){
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        
         if(Folders.length === 0){
             alert("Please select at least one file")
             return
@@ -22,9 +21,10 @@ function Home(){
             let response;
             const formData=new FormData();
             let flag=1;
-            for (let i = 0; i<Folders.length; i++) {
+            const chunkSize=3;
+            for (let i =0;i<Folders.length;i++) {
                 formData.append('images',Folders[i]);
-                if(((i+1)%7==0 && i>0)||i==Folders.length-1){
+                if(((i+1)%chunkSize==0 && i>0)||i==Folders.length-1){
                     response = await fetch(`${API_URL}/upload`, {
                         method: 'POST',
                         body: formData
