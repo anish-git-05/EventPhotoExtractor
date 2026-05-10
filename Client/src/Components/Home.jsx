@@ -17,51 +17,45 @@ function Home(){
             alert("Please select at least one file")
             return
         }
-        
         setLoading(true)
-        
-        const formData = new FormData();
-        for (let i = 0; i < Folders.length; i++) {
-            formData.append('images', Folders[i]);
-        }
-
-        try {
-            const response = await fetch(`${API_URL}/process`, {
-                method: 'POST',
-                body: formData
-            })
-
-            if(response.ok){
-                const blob = await response.blob();
-                    
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.setAttribute('download', 'curated_album.zip');
-                
-                document.body.appendChild(link);
-                link.click();
-                
-                link.parentNode.removeChild(link);
-                window.URL.revokeObjectURL(downloadUrl);
-
-                // --- THE NEW CLEANUP CODE ---
-                
+        try{
+            let response;
+            const formData=new FormData();
+            let chunk=1;
+            for (let i = 0; i<Folders.length; i++) {
+                formData.append('images',Folders[i]);
+                if(((i+1)%7==0 && i>0)||i==Folders.length-1){
+                    response = await fetch(`${API_URL}/process`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    if(response.ok){
+                        const blob = await response.blob();     
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = downloadUrl;
+                        let fileName=`curated_album_part_${chunk}.zip`;
+                        link.setAttribute('download', fileName);
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        
+                        link.parentNode.removeChild(link);
+                        window.URL.revokeObjectURL(downloadUrl);
+                        formData.delete('images');
+                    } else {
+                        const data = await response.json()
+                        alert(data.error || "An error occurred on the server.")
+                    }
+                    chunk++;
+                }
+            }
                 // 1. Reset your React state (removes the "X photos ready" text)
                 setFolders([]); 
-                
-                // 2. Reset the actual HTML form (clears the physical file input box)
-                e.target.reset(); 
-                
-                // Optional: Let them know it's completely done
+                document.getElementById('file-upload').value=''; 
                 alert("Success! Your curated album is downloading.");
                 
                 // ----------------------------
-
-            } else {
-                const data = await response.json()
-                alert(data.error || "An error occurred on the server.")
-            }
         } catch (err) {
             alert("Failed to connect to the server. Is Flask running?")
             console.error(err)
