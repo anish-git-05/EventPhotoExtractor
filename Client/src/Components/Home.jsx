@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import {API_URL} from '../api.js'
 import '../Home.css'
+import imageCompression from 'browser-image-compression';
 
 function Home(){
     const [Folders, setFolders] = useState([])
@@ -12,6 +13,11 @@ function Home(){
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        const options={
+            maxSizeMB:0.5,
+            maxWidthOrHeight:1920,
+            useWebWorker:true
+        }
         if(Folders.length === 0){
             alert("Please select at least one file")
             return
@@ -21,9 +27,10 @@ function Home(){
             let response;
             const formData=new FormData();
             let flag=1;
-            const chunkSize=3;
+            const chunkSize=5;
             for (let i =0;i<Folders.length;i++) {
-                formData.append('images',Folders[i]);
+                const compressedFile=await imageCompression(Folders[i],options);
+                formData.append('images',compressedFile,Folders[i].name);
                 if(((i+1)%chunkSize==0 && i>0)||i==Folders.length-1){
                     response = await fetch(`${API_URL}/upload`, {
                         method: 'POST',
