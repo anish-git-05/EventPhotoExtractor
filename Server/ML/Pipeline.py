@@ -26,7 +26,7 @@ def ImgPipeline(inputFolder,outputFolder):
     for label,img_list in clusters.items():
         if label=='noise':
             for noisy_img in img_list:
-                if not scores[noisy_img]['isBlurry']:
+                if not scores[noisy_img]['isBlurry'] and not scores[noisy_img]['isDark']:
                     best_photos.append(noisy_img)
         else:
             best_img=img_list[0]

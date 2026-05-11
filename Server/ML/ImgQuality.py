@@ -21,7 +21,7 @@ def imgScore(imgPath):
     score = {
         "blurriness": float(blurriness),
         "brightness": float(brightness),
-        "isBlurry": blurriness < 80,
+        "isBlurry": blurriness < 50,
         "isDark": brightness < 50
     }
 
