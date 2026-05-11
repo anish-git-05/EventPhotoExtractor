@@ -57,7 +57,11 @@ def process():
         os.makedirs(upload_dir,exist_ok=True)
         os.makedirs(curated_dir,exist_ok=True)
         gc.collect()
-        
+
+@app.route('/ping',methods=['GET'])
+def ping():
+    return jsonify({'Server is awake':True}),200
+
 if __name__=="__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port,debug=False)
