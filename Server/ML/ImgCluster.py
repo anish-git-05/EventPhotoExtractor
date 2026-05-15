@@ -4,6 +4,13 @@ from collections import defaultdict
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import Normalizer
 
+def tune_eps(old_eps,Feedback_uniqueness,alpha=0.005):
+    old_eps=old_eps
+    uniqueness=Feedback_uniqueness
+    change_required=3.5-uniqueness
+    new_eps=alpha*change_required+(1-alpha)*old_eps
+    return new_eps
+
 def cluster_images(X,file_paths,eps=1.1,min_samples=2):
     #n=X.shape[0]
     '''scale=Normalizer()

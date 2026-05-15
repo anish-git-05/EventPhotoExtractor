@@ -1,12 +1,14 @@
-import {useState} from 'react'
+import {useState,useRef} from 'react'
 import {API_URL} from '../api.js'
 import '../Home.css'
 import imageCompression from 'browser-image-compression';
 
 function Home(){
-    const [Folders, setFolders] = useState([])
-    const [Loading, setLoading] = useState(false)
-
+    const inputRef=useRef(null);
+    const [Folders, setFolders] = useState([]);
+    const [Loading, setLoading] = useState(false);
+    const [Feedback,setFeedback]=useState({});
+    const [LoadFeedback,setLoadFeedback]=useState(false);
     const handleFileChange = (e) => {
         setFolders(e.target.files)
     }
@@ -62,20 +64,48 @@ function Home(){
                 window.URL.revokeObjectURL(downloadURL);
                 setFolders([]); 
                 document.getElementById('file-upload').value=''; 
+                if(inputRef.current){
+                    inputRef.current.value="";
+                }
                 alert("Success! Your curated album is downloaded.");
             }else{
                 const data=await response.json();
                 alert(data.error|| "Processing failed. Please try again.");
             }
-                
-                // ----------------------------
         } catch (err) {
             alert("Failed to connect to the server. Please try again later.")
-            console.error(err)
+            console.error(err);
         } finally {
-            setLoading(false)
+            setLoading(false);
+            setLoadFeedback(true);
         }
     }
+    const handleInputChange=(e)=>{
+            const {name,value}=e.target;
+            setFeedback((prevFeedback)=>({
+                ...prevFeedback,[name]:value
+            }));
+        };
+        const handleFeedback=async (e)=>{
+            e.preventDefault();
+            setFeedback(e.target.Feedback);
+            const response=await fetch(`${API_URL}/feedback`,{
+                method:'POST',
+                headers:{
+                    'content-type':'application/json'
+                },
+                body:JSON.stringify(Feedback)
+            });
+            const data=await response.json();
+            if(response.ok){
+                alert("Feedback Submitted!");
+                console.log(data,"Feedback submitted succesfully!");
+            }else{
+                alert("Feedback submission error. Please try again");
+                console.log(data.error||"Error in feedback submission");
+            }
+            setLoadFeedback(false);
+        };
 
     return(
         <div className='home'>
@@ -94,6 +124,7 @@ function Home(){
                         type='file' 
                         id='file-upload' 
                         multiple 
+                        ref={inputRef}
                         accept='image/*' 
                         onChange={handleFileChange}
                     />
@@ -109,6 +140,18 @@ function Home(){
                     </button>
                 </form>
             </div>
+            {LoadFeedback&&
+                <div className='feedback'>
+                    <form className='feedbackForm' onSubmit={handleFeedback}>
+                            <p>How do you rate the average quality selection of your photos?</p>
+                            <p>Very poor=1 and Very good=5</p>
+                            <input type='number' name='quality' min='1' max='5' placeholder='1-5' onChange={handleInputChange}></input>
+                            <p>On a scale of 1-5 how unique are the photos?</p>
+                            <input type='number' name='uniqueness' min='1' max='5' placeholder='1-5' onChange={handleInputChange}></input>
+                            <button type='submit'>Submit feedback</button>
+                    </form>
+                </div>
+            }   
             <div>
                 <h3>How to use:</h3>
                 <p>I: Click the "Select Event Photos" button and choose the event photos.</p>

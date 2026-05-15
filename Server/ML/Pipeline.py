@@ -6,7 +6,10 @@ import numpy as np
 import shutil
 import gc
 
-def ImgPipeline(inputFolder,outputFolder):
+def ImgPipeline(inputFolder,outputFolder,hParams):
+    eps=hParams['eps']
+    isBlurry=hParams['isBlurry']
+    isDark=hParams['isDark']
     scores={}
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
@@ -18,11 +21,11 @@ def ImgPipeline(inputFolder,outputFolder):
         imgPath=os.path.join(inputFolder,img)
         img_path.append(imgPath)
         features.append(extract_features(imgPath))
-        scores[imgPath]=imgScore(imgPath)
+        scores[imgPath]=imgScore(imgPath,isBlurry=isBlurry,isDark=isDark)
         gc.collect()
     features = np.array(features, dtype=np.float32)
     best_photos=[]
-    clusters=cluster_images(features,img_path,eps=0.15)
+    clusters=cluster_images(features,img_path,eps=eps)
     for label,img_list in clusters.items():
         if label=='noise':
             for noisy_img in img_list:
