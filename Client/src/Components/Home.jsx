@@ -10,6 +10,7 @@ function Home(){
     const [Loading, setLoading] = useState(false);
     const [Feedback,setFeedback]=useState({});
     const [LoadFeedback,setLoadFeedback]=useState(false);
+    const [FeedbackLoading,setFeedbackLoading]=useState(false);
     const handleFileChange = (e) => {
         setFolders(e.target.files);
     }
@@ -104,6 +105,7 @@ function Home(){
         };
     const handleFeedback=async (e)=>{
         e.preventDefault();
+        setFeedbackLoading(true);
         const response=await fetch(`${API_URL}/feedback`,{
             method:'POST',
             headers:{
@@ -120,8 +122,11 @@ function Home(){
             console.log(data.error||"Error in feedback submission");
         }
         setLoadFeedback(false);
+        setFeedbackLoading(false);
     };
-
+    const handleNoFeedback=(e)=>{
+        setLoadFeedback(false);
+    };
     return(
         <div className='home'>
             <div className='intro'>
@@ -156,16 +161,18 @@ function Home(){
                     </button>
                 </form>
             </div>
-            {LoadFeedback&&
+            {LoadFeedback&&!Loading&&
                 <div className='feedback'>
+                    Your feedback will help us improve our model!
                     <form className='feedbackForm' onSubmit={handleFeedback}>
                             <p>How do you rate the average quality selection of your photos?</p>
                             <p>Very poor=1 and Very good=5</p>
                             <input type='number' name='quality' min='1' max='5' placeholder='1-5' onChange={handleInputChange}></input>
                             <p>On a scale of 1-5 how unique are the photos?</p>
                             <input type='number' name='uniqueness' min='1' max='5' placeholder='1-5' onChange={handleInputChange}></input>
-                            <button type='submit'>Submit feedback</button>
+                            <button disabled={FeedbackLoading}type='submit'>{FeedbackLoading?"Feedback submitting...":"Submit feedback"}</button>
                     </form>
+                    {!FeedbackLoading&&<button className="skipFeedback"type='button' onClick={handleNoFeedback}>Skip feedback</button>}
                 </div>
             }   
             <div>
