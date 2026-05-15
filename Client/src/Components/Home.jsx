@@ -5,14 +5,17 @@ import imageCompression from 'browser-image-compression';
 
 function Home(){
     const inputRef=useRef(null);
+    const [topk,settopk]=useState('');
     const [Folders, setFolders] = useState([]);
     const [Loading, setLoading] = useState(false);
     const [Feedback,setFeedback]=useState({});
     const [LoadFeedback,setLoadFeedback]=useState(false);
     const handleFileChange = (e) => {
-        setFolders(e.target.files)
+        setFolders(e.target.files);
     }
-
+    const handletopkInputChange=(e)=>{
+        settopk(e.target.value);
+    }
     const handleSubmit = async (e) => {
         e.preventDefault()
         const options={
@@ -34,7 +37,7 @@ function Home(){
                 const compressedFile=await imageCompression(Folders[i],options);
                 formData.append('images',compressedFile,Folders[i].name);
                 if(((i+1)%chunkSize==0 && i>0)||i==Folders.length-1){
-                    response = await fetch(`${API_URL}/upload`, {
+                    response = await fetch(`${API_URL}/upload/files`, {
                         method: 'POST',
                         body: formData
                     })
@@ -46,6 +49,19 @@ function Home(){
                     }
                     formData.delete('images');
                 }
+            }
+            response=await fetch(`${API_URL}/upload/topk`,{
+                method:"POST",
+                headers:{
+                    'content-type':'application/json'
+                },
+                body:JSON.stringify({'topk':topk})
+            });
+            const data=await response.json();
+            if(response.ok){
+                console.log("topk value uploaded successfully!")
+            }else{
+                console.log(data.error||"topk value not uploaded");
             }
             if(!flag){
                 alert("Upload failed. Please try again.");
@@ -86,26 +102,25 @@ function Home(){
                 ...prevFeedback,[name]:value
             }));
         };
-        const handleFeedback=async (e)=>{
-            e.preventDefault();
-            setFeedback(e.target.Feedback);
-            const response=await fetch(`${API_URL}/feedback`,{
-                method:'POST',
-                headers:{
-                    'content-type':'application/json'
-                },
-                body:JSON.stringify(Feedback)
-            });
-            const data=await response.json();
-            if(response.ok){
-                alert("Feedback Submitted!");
-                console.log(data,"Feedback submitted succesfully!");
-            }else{
-                alert("Feedback submission error. Please try again");
-                console.log(data.error||"Error in feedback submission");
-            }
-            setLoadFeedback(false);
-        };
+    const handleFeedback=async (e)=>{
+        e.preventDefault();
+        const response=await fetch(`${API_URL}/feedback`,{
+            method:'POST',
+            headers:{
+                'content-type':'application/json'
+            },
+            body:JSON.stringify(Feedback)
+        });
+        const data=await response.json();
+        if(response.ok){
+            alert("Feedback Submitted!");
+            console.log(data,"Feedback submitted succesfully!");
+        }else{
+            alert("Feedback submission error. Please try again");
+            console.log(data.error||"Error in feedback submission");
+        }
+        setLoadFeedback(false);
+    };
 
     return(
         <div className='home'>
@@ -131,10 +146,11 @@ function Home(){
 
                     {Folders.length > 0 && (
                         <p>
-                            📎 {Folders.length} photos ready for upload.
+                            {Folders.length} photos ready for upload!
                         </p>
                     )}
-                    
+                    <p>Choose how many of the best photos you want. If not chosen, by default atmost 8 photos will be chosen.</p>
+                    <input name="topk" type="number" min='1' max={Folders.length} onChange={handletopkInputChange}></input>
                     <button disabled={Loading} type='submit'>
                         {Loading ? "Processing..." : "Extract Best Photos"}
                     </button>

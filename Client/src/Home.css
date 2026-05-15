@@ -260,3 +260,145 @@
 
   .intro h1 { font-size: 2.4rem; }
 }
+/* ─── Top-K Input Section ────────────────────────────────── */
+
+/* Style the instructional text above the Top-K input */
+.filepath form p {
+  margin-top: 36px;
+  margin-bottom: 12px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Apply the sleek bottom-border design to number inputs */
+.filepath form input[type='number'],
+.feedbackForm input[type='number'] {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 10px 0;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  color: var(--accent); /* Make the typed numbers pop in gold */
+  outline: none;
+  
+  /* Reuse your elegant focus underline animation */
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  transition: background-size var(--transition), border-color var(--transition);
+}
+
+.filepath form input[type='number']:focus,
+.feedbackForm input[type='number']:focus {
+  background-size: 100% 1px;
+  border-bottom-color: transparent;
+}
+
+/* Hide the clunky browser up/down arrows on number inputs for a clean look */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+
+/* ─── Feedback Card ──────────────────────────────────────── */
+
+.feedback {
+  width: 100%;
+  max-width: 540px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 44px 48px 48px;
+  animation: fadeUp 0.8s ease both;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add a subtle gold accent to the top of the feedback card */
+.feedback::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-dim);
+}
+
+.feedbackForm {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Use the elegant Garamond font for the main feedback questions */
+.feedbackForm p:nth-child(1),
+.feedbackForm p:nth-child(4) {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  margin-top: 36px;
+  line-height: 1.2;
+}
+
+.feedbackForm p:nth-child(1) { margin-top: 0; }
+
+/* Style the "Very poor=1" instruction as a UI label */
+.feedbackForm p:nth-child(2) {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* ─── Feedback Submit Button ─────────────────────────────── */
+
+/* Ghost button style: Outlined gold, fills in on hover */
+.feedbackForm button {
+  margin-top: 48px;
+  width: 100%;
+  padding: 15px 32px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+}
+
+.feedbackForm button:hover {
+  background: var(--accent);
+  color: #0d0d0d;
+  transform: translateY(-1px);
+}
+
+.feedbackForm button:active {
+  transform: translateY(0);
+}
+
+/* ─── Responsive Update ──────────────────────────────────── */
+/* Add the feedback class to your existing mobile media query */
+@media (max-width: 600px) {
+  .filepath, .feedback {
+    padding: 36px 28px 40px;
+  }
+}

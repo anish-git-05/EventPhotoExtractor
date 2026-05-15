@@ -6,7 +6,7 @@ import numpy as np
 import shutil
 import gc
 
-def ImgPipeline(inputFolder,outputFolder,hParams):
+def ImgPipeline(inputFolder,outputFolder,hParams,top_k):
     eps=hParams['eps']
     isBlurry=hParams['isBlurry']
     isDark=hParams['isDark']
@@ -34,9 +34,16 @@ def ImgPipeline(inputFolder,outputFolder,hParams):
         else:
             best_img=img_list[0]
             for img in img_list:
-                if scores[img]['blurriness']>scores[best_img]['blurriness']:
+                if scores[img]['aestheticness']>scores[best_img]['aestheticness']:
                     best_img=img
             best_photos.append(best_img)
+    best_photos_tmp=[]
+    for img in best_photos:
+        if scores[img]['brightness']<200 and not scores[img]['isBlurry'] and not scores[img]['isDark']:
+            best_photos_tmp.append(img)
+    best_photos=best_photos_tmp
+    best_photos.sort(key=lambda x:scores[x]['aestheticness'],reverse=True)
+    best_photos=best_photos[0:min(top_k,len(best_photos))]
     for img in best_photos:
         imgName=os.path.basename(img)
         outputPath=os.path.join(outputFolder,imgName)

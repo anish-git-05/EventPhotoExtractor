@@ -27,7 +27,7 @@ if os.path.exists(curated_dir):
     shutil.rmtree(curated_dir)
 os.makedirs(upload_dir)
 os.makedirs(curated_dir)
-@app.route('/upload',methods=['POST'])
+@app.route('/upload/files',methods=['POST'])
 def upload():
     os.makedirs(upload_dir,exist_ok=True)
     data=request.files
@@ -38,11 +38,24 @@ def upload():
         if img.filename:
             img.save(os.path.join(upload_dir,img.filename))
     return jsonify({'message':'Images uploaded succesfully'}),200
+topk_value=8
+@app.route('/upload/topk',methods=['POST'])
+def upload_topk():
+    data=request.json
+    if not data:
+        return jsonify({'message':'User did not enter topk value.'}),200
+    try:
+        global topk_value
+        topk_value=int(data.get('topk'))
+        return jsonify({'message':'topk value recieved'}),200
+    except Exception as e:
+        return jsonify({'error':f'Server error in recieving the top k value:\n{str(e)}'})
+
 
 JSON_BIN_URL="https://api.jsonbin.io/v3/b"
 BIN_ID=os.environ.get("BIN_ID")
 API_KEY=os.environ.get("API_KEY")
-default_hParams={"eps":0.15,"isBlurry":100,"isDark":100}
+default_hParams={"eps":0.15,"isBlurry":800,"isDark":60}
 def get_hParams():
     if not BIN_ID or not API_KEY:
         return default_hParams
@@ -52,8 +65,8 @@ def get_hParams():
         if response.status_code==200:
             hParams={}
             hParams['eps']=response.json().get('record', {}).get('hyperparameters', {}).get('eps', 0.15)
-            hParams['isBlurry']=response.json().get('record', {}).get('hyperparameters', {}).get('isBlurry', 50)
-            hParams['isDark']=response.json().get('record', {}).get('hyperparameters', {}).get('isDark', 50)
+            hParams['isBlurry']=response.json().get('record', {}).get('hyperparameters', {}).get('isBlurry', 800)
+            hParams['isDark']=response.json().get('record', {}).get('hyperparameters', {}).get('isDark', 60)
             return hParams
         return default_hParams  
     except:
@@ -88,7 +101,7 @@ def save_hParams(new_hParams):
 def process():
     try:
         os.makedirs(curated_dir,exist_ok=True)
-        ImgPipeline(upload_dir,curated_dir,get_hParams())
+        ImgPipeline(upload_dir,curated_dir,get_hParams(),topk_value)
         curated_photos = os.listdir(curated_dir)
         if len(curated_photos) == 0:
             return jsonify({"error": "No photos met the AI criteria."}), 400
