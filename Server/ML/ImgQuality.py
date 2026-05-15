@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def tune_quality(old_isBlurry,old_isDark,Feedback_quality,alpha=20.0):
+def tune_quality(old_isBlurry,old_isDark,Feedback_quality,alpha=10.0):
     quality=Feedback_quality
     change=4.95-quality
     isBlurry=old_isBlurry

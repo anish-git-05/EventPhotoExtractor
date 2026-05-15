@@ -150,7 +150,7 @@ function Home(){
                         </p>
                     )}
                     <p>Choose how many of the best photos you want. If not chosen, by default atmost 8 photos will be chosen.</p>
-                    <input name="topk" type="number" min='1' max={Folders.length} onChange={handletopkInputChange}></input>
+                    <input name="topk" type="number" min='1' max={Folders.length} onChange={handletopkInputChange} className='topkinput'></input>
                     <button disabled={Loading} type='submit'>
                         {Loading ? "Processing..." : "Extract Best Photos"}
                     </button>
